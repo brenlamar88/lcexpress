@@ -2355,10 +2355,11 @@ img{max-width:100%;display:block}
   transform:scale(calc(1 + (var(--big) - 1) * (1 - var(--p))));
   filter:drop-shadow(0 calc(2px + 8px * (1 - var(--p))) calc(4px + 14px * (1 - var(--p))) rgba(0,0,0,.45));
   will-change:transform;z-index:60}
-.brand.settle .brand-logo{transition:transform .25s ease-out}
+.brand.settle .brand-logo{transition:transform .25s ease-out,filter .25s ease-out}
+body.menu-open .brand-logo{transform:scale(1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
 @media(min-width:1101px){.hero .wrap{padding-left:200px}}
 @media(max-width:1100px){.brand{--big:2.5}}
-@media(max-width:760px){.brand{--big:2.1}.hero{padding-top:120px}}
+@media(max-width:760px){.brand{--big:2.1}.hero{padding-top:120px}.page-head{padding-top:112px}.roster-grid{grid-template-columns:repeat(2,1fr);gap:12px}}
 @media(prefers-reduced-motion:reduce){.brand{--big:1!important}}
 .cs-logo{height:9cqw;width:auto;margin-right:1cqw}
 .cs-head .t{margin-right:auto}
@@ -3062,7 +3063,7 @@ function route(){
   if(page!="player" && !PAGES.includes(page)) page="home";
   document.querySelectorAll(".page").forEach(s=>s.classList.toggle("on",s.id=="page-"+page));
   document.querySelectorAll(".links a").forEach(a=>a.classList.toggle("on",a.dataset.r==(page=="player"?"roster":page=="card"?"recruiting":page)));
-  $("#links").classList.remove("open");
+  if($("#links").classList.contains("open")) setMenu(false);
   if(page=="player") renderPlayer(arg);
   if(page=="card") renderCard();
   window.scrollTo(0,0);
@@ -3074,7 +3075,11 @@ function route(){
   window.addEventListener("hashchange",()=>{ b.classList.add("settle"); setTimeout(()=>b.classList.remove("settle"),300); });
   upd();
 })();
-$("#burger").onclick=()=>$("#links").classList.toggle("open");
+function setMenu(open){
+  const b=document.querySelector(".brand"); b.classList.add("settle"); setTimeout(()=>b.classList.remove("settle"),300);
+  $("#links").classList.toggle("open",open); document.body.classList.toggle("menu-open",open);
+}
+$("#burger").onclick=()=>setMenu(!$("#links").classList.contains("open"));
 window.addEventListener("hashchange",route);
 
 (async function init(){
