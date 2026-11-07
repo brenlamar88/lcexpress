@@ -2496,6 +2496,7 @@ body{overflow-x:hidden}
 .mtable{width:100%;border-collapse:collapse}
 .mtable td{padding:9px 4px;border-bottom:1px solid var(--line)}
 .mtable td:last-child{text-align:right;font-family:var(--head);font-weight:800;font-size:19px}
+.mtable small{font-family:var(--body);font-weight:500;font-size:12px;color:var(--muted)}
 .pactions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
 .qrbox{display:flex;gap:16px;align-items:center;background:var(--navy);color:#fff;border-radius:12px;padding:16px;margin-top:22px}
 .qrbox .qr{background:#fff;padding:6px;border-radius:8px;width:104px;height:104px;flex-shrink:0}
@@ -2763,62 +2764,35 @@ footer .script{color:var(--pink);font-size:28px}
    docs.google.com/spreadsheets/d/<THIS_PART>/edit
    ========================================================= */
 const CONFIG = {
-  SHEET_ID: "",                 // e.g. "1AbC...xyz"
-  TABS: { settings:"Settings", players:"Players", games:"Games", tournaments:"Tournaments", coaches:"Coaches" },
-  SITE_URL: ""                  // e.g. "https://lcexpress14u.com/" — used in QR codes. Blank = current address.
+  /* Public feed sheet ("LC Express 14U | Website Feed (Public)"). It pulls from the coach's
+     private master sheet and only carries players marked Yes under "Public Approved?". */
+  SHEET_ID: "1uEQF6fX-UNQbwuzQI21v6ZbDzwo-DK9BBE7FNGdGM8k",
+  TABS: { settings:"Settings", players:"Players", games:"Games", tournaments:"Tournaments" },
+  SITE_URL: ""                  // e.g. "https://www.lcexpress-tx.com/" — used in QR codes. Blank = current address.
 };
 
-/* ---------- Sample data (mirrors the client mockups; replaced by the sheet when SHEET_ID is set) ---------- */
-const SAMPLE = {
-  settings:[
-    ["team_name","LC Express 14U"],["short_name","LC Express"],["age_group","14U"],
-    ["city","Normangee"],["state","Texas"],["season","Fall 2026"],["sanction","USSSA"],
-    ["grad_class","2030"],["tagline","Compete. Develop. Belong."],
-    ["about","LC Express 14U is a competitive travel softball team based in Normangee, Texas, focused on player development, high-level competition, and preparation for the next level."],
-    ["mission","We build complete athletes — on the field, in the classroom, and in the community — and give every player the exposure she needs to play at the next level."],
-    ["instagram",""],["facebook",""],["youtube",""],["gamechanger_team",""],["highlights_playlist",""],
-    ["contact_email",""],["team_photo",""]
-  ].map(([key,value])=>({key,value})),
-  players:[
-    {number:1,first:"Rylee",last:"Gibson",positions:"P / UTIL",primary:"Pitcher",grad:2030,bats:"R",throws:"R",height:"5'8\"",gpa:"3.9",bio:"Rylee is a competitive and disciplined pitcher with a strong command of multiple pitches, the ability to compete at a high level, and brings leadership, work ethic, and a competitive edge to the field.",
-      fastball:"51–53 mph",curveball:"48–51 mph",changeup:"47–49 mph",dropball:"49–51 mph",riseball:"49–51 mph",throw_of:"61 mph",home_1b:"3.12 sec"},
-    {number:3,first:"Maisie",last:"Kerry",positions:"OF / UTIL",grad:2030},
-    {number:5,first:"Emilee",last:"Hartwick",positions:"OF",grad:2030},
-    {number:7,first:"Sara",last:"Makepeace",positions:"P / 1B",grad:2030},
-    {number:8,first:"Alexis",last:"Foster",positions:"C / 3B",grad:2030},
-    {number:9,first:"Audrey",last:"Dominguez",positions:"SS / 2B",grad:2030},
-    {number:12,first:"Emmy",last:"Shaffer",positions:"OF / UTIL",grad:2030},
-    {number:14,first:"Kinsley",last:"Seelye",positions:"3B / OF",grad:2030},
-    {number:15,first:"Sloane",last:"Foley",positions:"2B / OF",grad:2030},
-    {number:21,first:"Lauren",last:"Towery",positions:"1B / OF",grad:2030},
-    {number:25,first:"Maren",last:"Harris",positions:"C / UTIL",grad:2030},
-    {number:81,first:"Codey",last:"Jones",positions:"OF",grad:2030}
-  ],
-  games:[
-    {date:"2026-09-26",tournament:"Sept. Sapphire CROSSROADS",opponent:"TX Premier Fastpitch 14U",site:"vs",us:9,them:1},
-    {date:"2026-09-26",tournament:"Sept. Sapphire CROSSROADS",opponent:"Barrel Factory 14U",site:"@",us:7,them:1},
-    {date:"2026-09-26",tournament:"Sept. Sapphire CROSSROADS",opponent:"TX Twelve Capital City 13U",site:"vs",us:6,them:0},
-    {date:"2026-09-26",tournament:"Sept. Sapphire CROSSROADS",opponent:"Softball Mechanix 14U",site:"@",us:4,them:3},
-    {date:"2026-09-27",tournament:"Sept. Sapphire CROSSROADS",opponent:"RiptideATX-Evans 14U",site:"@",us:5,them:0}
-  ],
-  tournaments:[
-    {name:"Sept. Sapphire CROSSROADS",start:"2026-09-26",end:"2026-09-27",city:"",venue:"",sanction:"USSSA",finish:"",link:""},
-    {name:"Lone Star Fall Classic",start:"2026-11-07",end:"2026-11-08",city:"Bryan, TX",venue:"",sanction:"USSSA",finish:"",link:""},
-    {name:"Texas Showcase",start:"2026-11-21",end:"2026-11-22",city:"College Station, TX",venue:"",sanction:"",finish:"",link:""},
-    {name:"Holiday Classic",start:"2026-12-05",end:"2026-12-06",city:"Waco, TX",venue:"",sanction:"",finish:"",link:""}
-  ],
-  coaches:[
-    {name:"Andrae Harris",title:"Head Coach",phone:"979-XXX-XXXX",email:"andrae@lcexpress.com"},
-    {name:"Jessica Martin",title:"Assistant Coach",phone:"979-XXX-XXXX",email:"jessica@lcexpress.com"},
-    {name:"Brad Carter",title:"Assistant Coach",phone:"979-XXX-XXXX",email:"brad@lcexpress.com"}
-  ]
+/* Text the sheet doesn't hold. Any Settings row with the same name overrides these. */
+const DEFAULTS = {
+  team_name:"LC Express 14U", short_name:"LC Express", level:"14U", location:"Normangee, TX",
+  tagline:"Compete. Develop. Belong.",
+  about:"LC Express 14U is a competitive travel softball team based in Normangee, Texas, focused on player development, high-level competition, and preparation for the next level.",
+  mission:"We build complete athletes — on the field, in the classroom, and in the community — and give every player the exposure she needs to play at the next level.",
+  team_photo:"", instagram_url:"", youtube_url:"", highlights_playlist:""
 };
 
-/* Measurable columns: sheet column → label. Blank cells are hidden on the profile. */
+/* Used only if the feed sheet can't be reached. No player data here on purpose. */
+const FALLBACK = {
+  settings:[["Team Name","LC Express 14U"],["Location","Normangee, TX"],["Season","Fall 2026"],["Level","14U"],["Head Coach","Andrae Harris"],["Gamechanger Link","https://web.gc.com/teams/tcrY3BHPr1Vw/2026-fall-lc-express-14u"],["Facebook URL","https://www.facebook.com/profile.php?id=100083095154163"]].map(([setting,value])=>({setting,value})),
+  players:[], games:[], tournaments:[]
+};
+
+/* Measurable columns from the Players tab → label and unit. Blank or N/A cells are hidden. */
 const MEASURABLES = [
-  ["fastball","Fastball"],["curveball","Curveball"],["changeup","Changeup"],["dropball","Dropball"],["riseball","Riseball"],["screwball","Screwball"],
-  ["exit_velo","Exit Velo"],["throw_of","Throwing (OF)"],["throw_if","Throwing (IF)"],["pop_time","Pop Time"],["home_1b","Home to 1B"],["sixty","60 Yard"]
+  ["pitching_avg_max","Pitching Velo","mph"],["hitting_avg_max","Exit Velo","mph"],
+  ["throwing_avg_max","Throwing Velo","mph"],["home_to_first_sec","Home to 1B","sec"]
 ];
+const POS = {pitcher:"P",catcher:"C","first base":"1B","second base":"2B","third base":"3B",shortstop:"SS",outfield:"OF",outfielder:"OF",utility:"UTIL",util:"UTIL","middle infielder":"MI",mi:"MI",infield:"IF"};
+const POS_LONG = {P:"Pitcher",C:"Catcher","1B":"First Base","2B":"Second Base","3B":"Third Base",SS:"Shortstop",OF:"Outfield",UTIL:"Utility",MI:"Middle Infield",IF:"Infield",LF:"Left Field",CF:"Center Field",RF:"Right Field"};
 
 /* ---------- Helpers ---------- */
 const $ = s=>document.querySelector(s);
@@ -2847,44 +2821,75 @@ function parseCSV(text){
   return rows.slice(1).filter(r=>r.some(v=>v.trim())).map(r=>Object.fromEntries(head.map((h,i)=>[h,(r[i]??"").trim()])));
 }
 async function loadSheet(){
-  if(!CONFIG.SHEET_ID) return {...SAMPLE, source:"sample"};
+  if(!CONFIG.SHEET_ID) return {...FALLBACK, source:"fallback"};
   const get = async tab=>{
-    const url=`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
-    const r=await fetch(url,{cache:"no-store"}); if(!r.ok) throw new Error(tab); return parseCSV(await r.text());
+    const url=`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`;
+    const r=await fetch(url,{cache:"no-store"}); if(!r.ok) throw new Error(tab);
+    const t=await r.text(); if(/^\s*</.test(t)) throw new Error(tab+" not shared"); return parseCSV(t);
   };
   try{
-    const T=CONFIG.TABS; const [settings,players,games,tournaments,coaches]=await Promise.all([get(T.settings),get(T.players),get(T.games),get(T.tournaments),get(T.coaches)]);
-    return {settings,players,games,tournaments,coaches,source:"sheet"};
-  }catch(e){ console.warn("Sheet load failed, using sample data",e); return {...SAMPLE,source:"sample-fallback"}; }
+    const T=CONFIG.TABS; const [settings,players,games,tournaments]=await Promise.all([get(T.settings),get(T.players),get(T.games),get(T.tournaments)]);
+    return {settings,players,games,tournaments,source:"sheet"};
+  }catch(e){ console.warn("Feed sheet unavailable",e); return {...FALLBACK,source:"fallback"}; }
 }
 
-/* Normalize sheet rows (header names are forgiving) */
+const keyOf = s=>String(s||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
+const isNA = v=>!v || /^(n\/?a|none|-|—)$/i.test(String(v).trim());
+const isURL = v=>/^https?:\/\//i.test(String(v||"").trim());
+const posAbbr = v=>{ const k=String(v||"").trim().toLowerCase(); return POS[k]||String(v||"").trim().toUpperCase(); };
+const hand = v=>({right:"R",left:"L",switch:"S",r:"R",l:"L",s:"S"}[String(v||"").trim().toLowerCase()]||String(v||"").trim());
+function measure(v,unit){
+  if(isNA(v)) return "";
+  const m=String(v).match(/^\s*([\d.]+)\s*\(\s*max\s*([\d.]+)\s*\)/i);
+  if(m) return `${m[1]} ${unit} <small>avg</small> · ${m[2]} <small>max</small>`;
+  return /[a-z]/i.test(v) ? esc(v) : `${esc(v)} ${unit}`;
+}
+function driveId(u){ const m=String(u||"").match(/\/d\/([\w-]{20,})|[?&]id=([\w-]{20,})/); return m?(m[1]||m[2]):""; }
+
+/* Map the coach's sheet columns to what the pages use */
 function normalize(raw){
-  const S={}; (raw.settings||[]).forEach(r=>{ if(r.key) S[String(r.key).trim().toLowerCase()]=r.value??""; });
-  const pick=(o,...k)=>{for(const x of k){ if(o[x]!==undefined && String(o[x]).trim()!=="") return o[x]; } return ""};
-  const players=(raw.players||[]).map(p=>({
-    ...p,
-    number:pick(p,"number","jersey","no"), first:pick(p,"first","first_name"), last:pick(p,"last","last_name"),
-    positions:pick(p,"positions","position"), primary:pick(p,"primary","primary_position"),
-    grad:pick(p,"grad","grad_year","class"), bats:pick(p,"bats"), throws:pick(p,"throws"),
-    height:pick(p,"height"), gpa:pick(p,"gpa"), photo:pick(p,"photo","photo_url"),
-    gamechanger:pick(p,"gamechanger","gamechanger_url"), highlights:pick(p,"highlights","highlights_url"),
-    bio:pick(p,"bio"), email:pick(p,"email","recruiting_email"), active:pick(p,"active")
-  })).filter(p=>(p.first||p.last) && !/^(no|n|false|0)$/i.test(p.active));
+  const S={...DEFAULTS};
+  (raw.settings||[]).forEach(r=>{ const k=keyOf(r.setting||r.key); const v=String(r.value??"").trim(); if(k && v) S[k]=v; });
+  const loc=S.location.split(",").map(x=>x.trim()); S.city=loc[0]||""; S.state=(loc[1]||"").replace(/^TX$/i,"Texas");
+  S.age_group=S.level||"14U";
+  S.sanction=S.governing_body||"";
+  S.facebook=S.facebook_url||""; S.instagram=S.instagram_url||""; S.youtube=S.youtube_url||"";
+  S.gamechanger_team=S.gamechanger_link||"";
+  if(!S.site_url && S.recruiting_website_url) S.site_url=S.recruiting_website_url;
+
+  const players=(raw.players||[]).map(p=>{
+    const name=String(p.player_name||"").trim(); const sp=name.split(/\s+/);
+    const prim=posAbbr(p.primary_position);
+    const sec=String(p.secondary_positions||"").split(/[\/,]/).map(posAbbr).filter(x=>x && x!==prim);
+    const pos=[prim,...sec].filter(Boolean);
+    return {
+      number:String(p.jersey||"").trim(), first:sp[0]||"", last:sp.slice(1).join(" "), name,
+      positions:pos.join(" / "), primary:POS_LONG[prim]||p.primary_position||"", posLong:pos.map(x=>POS_LONG[x]||x).join(" / "),
+      grad:String(p.grad_year||"").trim(), bats:hand(p.bats), throws:hand(p.throws), school:p.high_school||"",
+      height:String(p.height||"").replace(/[’′]/g,"'").replace(/[”″]/g,'"'), gpa:p.gpa||"",
+      photoDrive:driveId(p.photo_link), gamechanger:isURL(p.gamechanger_profile)?p.gamechanger_profile:"",
+      highlights:isURL(p.highlight_video)?p.highlight_video:"", social:String(p.social_recruiting_link||"").trim(),
+      bio:p.player_bio||"", slug:p.profile_slug||"",
+      meas:Object.fromEntries(MEASURABLES.map(([k])=>[k,p[k]]))
+    };
+  }).filter(p=>p.name);
   players.forEach(p=>p.id=slug(p));
   players.sort((a,b)=>(+a.number||999)-(+b.number||999));
+
   const games=(raw.games||[]).map(g=>{
-    const us=pick(g,"us","our_score","lc_score"), them=pick(g,"them","opp_score","opponent_score");
-    const d=parseDate(pick(g,"date"));
-    let res=pick(g,"result").toUpperCase().charAt(0);
-    if(us!=="" && them!==""){ res= +us>+them?"W": +us<+them?"L":"T"; }
-    return {date:d,tournament:pick(g,"tournament"),opponent:pick(g,"opponent"),site:pick(g,"site","home_away")||"vs",us,them,res:/[WLT]/.test(res)?res:"",time:pick(g,"time"),field:pick(g,"field")};
-  }).sort((a,b)=>(a.date||0)-(b.date||0));
-  const tournaments=(raw.tournaments||[]).map(t=>({name:pick(t,"name","tournament"),start:parseDate(pick(t,"start","start_date")),end:parseDate(pick(t,"end","end_date")),city:pick(t,"city","location"),venue:pick(t,"venue"),sanction:pick(t,"sanction"),finish:pick(t,"finish","result"),link:pick(t,"link","url")}))
+    const us=String(g.lc_express_runs??"").trim(), them=String(g.opponent_runs??"").trim();
+    let res=String(g.result||"").trim().toUpperCase().charAt(0);
+    if(us!=="" && them!=="" && !isNaN(+us) && !isNaN(+them)) res= +us>+them?"W": +us<+them?"L":"T";
+    return {date:parseDate(g.game_date),tournament:g.tournament||"",opponent:g.opponent||"",site:"vs",us,them,res:/[WLT]/.test(res)?res:"",time:g.game_time||"",field:[g.field,g.location].filter(Boolean).join(", "),gc:isURL(g.gamechanger_link)?g.gamechanger_link:""};
+  }).filter(g=>g.opponent).sort((a,b)=>(a.date||0)-(b.date||0));
+
+  const tournaments=(raw.tournaments||[]).map(t=>({name:t.tournament_name||"",start:parseDate(t.start_date),end:parseDate(t.end_date),city:t.city_state||"",venue:t.venue||"",sanction:t.organization||"",finish:t.team_finish||"",link:isURL(t.tournament_link)?t.tournament_link:"",gc:isURL(t.gamechanger_link)?t.gamechanger_link:"",status:String(t.status||"").toLowerCase()}))
     .filter(t=>t.name).sort((a,b)=>(a.start||0)-(b.start||0));
-  const coaches=(raw.coaches||[]).map(c=>({name:pick(c,"name"),title:pick(c,"title","role"),phone:pick(c,"phone"),email:pick(c,"email")})).filter(c=>c.name);
+
+  const coaches=S.head_coach?[{name:S.head_coach,title:"Head Coach",phone:S.coach_phone||"",email:S.coach_email||""}]:[];
   return {S,players,games,tournaments,coaches,source:raw.source};
 }
+const isDone = t=> t.status==="completed" || (t.status!=="upcoming" && (t.end||t.start) && (t.end||t.start)<today());
 
 /* ---------- Icons / art ---------- */
 const SIL = `<svg class="sil" viewBox="0 0 100 110"><path fill="#07131f" d="M66 40c6 6 9 18 6 34l-8-4c2-10 1-20-2-26z"/><circle cx="50" cy="40" r="17" fill="#07131f"/><path fill="#07131f" d="M31 36c0-12 9-19 19-19s19 7 19 19z"/><path fill="#07131f" d="M24 36h30v4H22c0-2 1-4 2-4z"/><path fill="#07131f" d="M8 110c2-22 18-36 42-36s40 14 42 36z"/><path fill="#f50079" d="M40 76l10 14 10-14c-3-1-6-2-10-2s-7 1-10 2z" opacity=".9"/><path fill="#00a8b8" d="M8 110c1-6 3-11 6-16l4 16z" opacity=".7"/></svg>`;
@@ -2900,7 +2905,8 @@ const ICON = {
   fb:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-9h3l.6-4H14V7c0-1 .5-2 2-2h2V2h-3c-3.5 0-5 2-5 5v2H7v4h3v9z" fill="currentColor" stroke="none"/></svg>`,
   yt:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/></svg>`
 };
-function avatar(p,big){ return `<div class="avatar">${p.photo?`<img src="${esc(p.photo)}" alt="${esc(p.first+' '+p.last)}" loading="lazy">`:SIL}${big?"":`<span class="bign">${esc(p.number)}</span>`}</div>`; }
+function photoErr(img){ const d=img.dataset.drive; if(d && !img.dataset.tried){ img.dataset.tried=1; img.src=`https://drive.google.com/thumbnail?id=${d}&sz=w800`; } else img.remove(); }
+function avatar(p,big){ return `<div class="avatar">${SIL}<img src="assets/players/${esc(p.id)}.webp" data-drive="${esc(p.photoDrive||"")}" alt="${esc(p.name)}" loading="lazy" onerror="photoErr(this)">${big?"":`<span class="bign">${esc(p.number)}</span>`}</div>`; }
 function qrSVG(text){ try{ const q=qrcode(0,"M"); q.addData(text); q.make(); return q.createSvgTag({cellSize:4,margin:0,scalable:true}); }catch(e){ return ""; } }
 function profileURL(p){ const base=(CONFIG.SITE_URL||location.href.split("#")[0]); return base+"#player-"+p.id; }
 
@@ -2920,7 +2926,7 @@ function fillFields(){
   document.title=`${teamName} Fastpitch Softball`;
   const soc=[["facebook","fb"],["instagram","ig"],["youtube","yt"]].filter(([k])=>S[k]).map(([k,i])=>`<a href="${esc(S[k])}" target="_blank" rel="noopener" aria-label="${k}">${ICON[i]}</a>`).join("");
   $("#social").innerHTML=soc;
-  $("#datanote").textContent = D.source=="sheet" ? "Live data from team Google Sheet" : "Preview data — connect the Google Sheet to go live";
+  $("#datanote").textContent = D.source=="sheet" ? "" : "Team data is temporarily unavailable.";
   const photo = S.team_photo || "assets/team-about.webp";
   $("#team-art-2").innerHTML=`<img src="${esc(photo)}" alt="LC Express players">`;
   if(S.team_photo) $("#about-band").style.backgroundImage=`url("${S.team_photo.replace(/"/g,"")}")`;
@@ -2928,16 +2934,18 @@ function fillFields(){
 
 function renderHome(){
   const r=record(D.games), S=D.S;
-  const grads=[...new Set(D.players.map(p=>p.grad).filter(Boolean))];
-  const grad=S.grad_class||(grads.length==1?grads[0]:grads.length?`${Math.min(...grads)}–${Math.max(...grads)}`:"—");
+  const grads=[...new Set(D.players.map(p=>+p.grad).filter(Boolean))].sort();
+  const grad=grads.length==1?grads[0]:grads.length?`${grads[0]}–${String(grads[grads.length-1]).slice(-2)}`:"";
+  const titles=D.tournaments.filter(t=>/champ|1st|first/i.test(t.finish)).length;
+  const played=D.tournaments.filter(isDone).length;
   $("#stats").innerHTML=[
-    [ICON.users,D.players.length,"Players"],
-    [ICON.cap,grad,"Graduation Class"],
+    ...(D.players.length?[[ICON.users,D.players.length,"Players"],[ICON.cap,grad,grads.length>1?"Graduation Classes":"Graduation Class"]]
+      :[[ICON.calendar,played,"Tournaments Played"],[ICON.cap,titles,titles==1?"Championship":"Championships"]]),
     [ICON.trophy,recStr(r),"Overall Record",`(${r.n} game${r.n==1?"":"s"})`],
     [ICON.target,r.pct,"Win Percentage"]
   ].map(([i,b,s,sm])=>`<div class="stat">${i}<b>${esc(b)}</b><span>${s}</span>${sm?`<small>${sm}</small>`:""}</div>`).join("");
-  $("#tile-roster").textContent=`Meet our ${D.players.length} athletes, view measurables, and access recruiting profiles.`;
-  const up=D.tournaments.filter(t=>(t.end||t.start)>=today()).slice(0,3);
+  $("#tile-roster").textContent=D.players.length?`Meet our ${D.players.length} athletes, view measurables, and access recruiting profiles.`:"Meet our athletes, view measurables, and access recruiting profiles.";
+  const up=D.tournaments.filter(t=>!isDone(t)).slice(0,3);
   $("#up-list").innerHTML = up.length ? up.map(t=>{const d=dateRange(t.start,t.end);
     return `<a class="up" href="#tournaments"><div class="d">${d.mon}<br>${d.days}</div><div><div class="n">${esc(t.name)}</div><div class="l"><span class="pin">${ICON.loc}</span> ${esc(t.city||"Location TBA")}</div></div></a>`}).join("")
     : `<div class="up"><div class="n">Schedule coming soon</div></div>`;
@@ -2950,17 +2958,17 @@ function renderRoster(){
   $("#roster-filters").onclick=e=>{const k=e.target.dataset.k; if(k){rosterFilter=k;renderRoster()}};
   const list=D.players.filter(groups[rosterFilter]);
   $("#roster-grid").innerHTML = list.length ? list.map(p=>`<a class="pcard" href="#player-${p.id}"><div class="ph">${avatar(p)}<span class="num">#${esc(p.number)}</span></div><div class="nm">${esc(p.first)}<br>${esc(p.last)}</div><div class="pos">${esc(p.positions)}</div></a>`).join("")
-    : `<div class="empty">No players in this group.</div>`;
+    : D.players.length?`<div class="empty">No players in this group.</div>`:`<div class="empty" style="grid-column:1/-1">Player profiles are on the way. They'll appear here as each family approves them.</div>`;
 }
 
 function renderPlayer(id){
   const i=D.players.findIndex(p=>p.id==id), p=D.players[i];
   if(!p){ $("#player-body").innerHTML=`<div class="empty" style="margin-top:-60px">Player not found. <a href="#roster" style="color:var(--pink)">Back to roster</a></div>`; return; }
   $("#crumb-name").textContent="› "+p.first+" "+p.last;
-  const meas=MEASURABLES.filter(([k])=>p[k]).map(([k,l])=>`<tr><td>${l}</td><td>${esc(p[k])}</td></tr>`).join("");
-  const posFull=p.primary||(p.positions||"").split("/")[0].trim();
-  const posLong=(p.positions||"").split("/").map(s=>({P:"Pitcher",C:"Catcher","1B":"First Base","2B":"Second Base","3B":"Third Base",SS:"Shortstop",OF:"Outfield",UTIL:"Utility",IF:"Infield"}[s.trim()]||s.trim())).join(" / ");
-  const facts=[["Bats / Throws",(p.bats||p.throws)?`${p.bats||"–"} / ${p.throws||"–"}`:""],["Height",p.height],["GPA",p.gpa],["Primary Position",posFull]].filter(f=>f[1]);
+  const meas=MEASURABLES.map(([k,l,u])=>[l,measure(p.meas[k],u)]).filter(x=>x[1]).map(([l,v])=>`<tr><td>${l}</td><td>${v}</td></tr>`).join("");
+  const posLong=p.posLong, posFull=p.primary;
+  const facts=[["Bats / Throws",(p.bats||p.throws)?`${p.bats||"–"} / ${p.throws||"–"}`:""],["Height",p.height],["GPA",p.gpa],["High School",p.school]].filter(f=>f[1]);
+  const soc=p.social?p.social.split(/\s+/).filter(x=>/^https?:|^@/.test(x)).map(x=>isURL(x)?`<a class="btn ghost" style="color:var(--navy)" href="${esc(x)}" target="_blank" rel="noopener">${/instagram/.test(x)?"Instagram":/tiktok/.test(x)?"TikTok":/x\.com|twitter/.test(x)?"X":"Social"} ↗</a>`:`<span class="btn ghost" style="color:var(--navy);cursor:default">${esc(x)}</span>`).join(""):"";
   const prev=D.players[(i-1+D.players.length)%D.players.length], next=D.players[(i+1)%D.players.length];
   const url=profileURL(p);
   $("#player-body").innerHTML=`
@@ -2979,9 +2987,9 @@ function renderPlayer(id){
         <div class="box"><h3 class="h">Player Bio</h3><p>${p.bio?esc(p.bio):`<span style="color:var(--muted)">Bio coming soon.</span>`}</p></div>
       </div>
       <div class="pactions">
-        ${p.gamechanger?`<a class="btn teal" href="${esc(p.gamechanger)}" target="_blank" rel="noopener">GameChanger Profile ↗</a>`:`<span class="btn teal" style="opacity:.45;cursor:default">GameChanger Profile</span>`}
-        ${p.highlights?`<a class="btn" href="${esc(p.highlights)}" target="_blank" rel="noopener">Highlights ▶</a>`:`<span class="btn" style="opacity:.45;cursor:default">Highlights ▶</span>`}
-        ${p.email?`<span class="btn ghost" style="color:var(--navy)">✉ ${esc(p.email)}</span>`:""}
+        ${p.gamechanger?`<a class="btn teal" href="${esc(p.gamechanger)}" target="_blank" rel="noopener">GameChanger Profile ↗</a>`:""}
+        ${p.highlights?`<a class="btn" href="${esc(p.highlights)}" target="_blank" rel="noopener">Highlights ▶</a>`:""}
+        ${soc}
       </div>
     </div>
   </div>
@@ -2991,7 +2999,7 @@ function renderPlayer(id){
 let schedTab="results";
 function gameRow(g,showTourney=true){
   const res = g.res?`<span class="res ${g.res}">${g.res} ${esc(g.us)}–${esc(g.them)}</span>`:`<span style="color:var(--muted)">${esc(g.time||"TBD")}</span>`;
-  return `<tr><td>${fmtD(g.date)}</td>${showTourney?`<td>${esc(g.tournament)}</td>`:""}<td>${esc(g.site=="@"?"@":"vs.")} ${esc(g.opponent)}</td><td>${res}</td></tr>`;
+  return `<tr><td>${fmtD(g.date)}</td>${showTourney?`<td>${esc(g.tournament)}</td>`:""}<td>vs. ${esc(g.opponent)}</td><td>${res}</td></tr>`;
 }
 function renderSchedule(){
   document.querySelectorAll("#sched-tabs .tab").forEach(b=>b.classList.toggle("on",b.dataset.t==schedTab));
@@ -3000,9 +3008,9 @@ function renderSchedule(){
     const g=D.games.filter(x=>x.res).slice().reverse();
     html = g.length?`<table class="games"><tr><th>Date</th><th>Tournament</th><th>Opponent</th><th>Result</th></tr>${g.map(x=>gameRow(x)).join("")}</table>`:`<div class="empty">No results yet.</div>`;
   } else if(schedTab=="schedule"){
-    const up=D.tournaments.filter(t=>(t.end||t.start)>=today());
+    const up=D.tournaments.filter(t=>!isDone(t));
     const ug=D.games.filter(x=>!x.res && x.date>=today());
-    html = (up.length||ug.length)?`<table class="games"><tr><th>Dates</th><th>Event</th><th>Location</th><th></th></tr>${up.map(t=>{const d=dateRange(t.start,t.end);return `<tr><td><b>${d.mon} ${d.days}</b></td><td>${esc(t.name)}</td><td>${esc(t.city||"TBA")}</td><td>${t.sanction?`<span class="badge">${esc(t.sanction)}</span>`:""}</td></tr>`}).join("")}${ug.map(x=>gameRow(x)).join("")}</table>`:`<div class="empty">Schedule coming soon.</div>`;
+    html = (up.length||ug.length)?`<table class="games"><tr><th>Dates</th><th>Event</th><th>Location</th><th></th></tr>${up.map(t=>{const d=dateRange(t.start,t.end);return `<tr><td><b>${d.mon} ${d.days}</b></td><td>${esc(t.name)}</td><td>${esc([t.venue,t.city].filter(Boolean).join(", ")||"TBA")}</td><td>${t.sanction?`<span class="badge">${esc(t.sanction)}</span>`:""}</td></tr>`}).join("")}${ug.map(x=>gameRow(x)).join("")}</table>`:`<div class="empty">Schedule coming soon.</div>`;
   } else {
     const names=[...new Set([...D.tournaments.map(t=>t.name),...D.games.map(g=>g.tournament)])].filter(Boolean);
     const blocks=names.map(n=>{const g=D.games.filter(x=>x.tournament==n); if(!g.length) return ""; const r=record(g);
@@ -3017,17 +3025,17 @@ function renderSchedule(){
 $("#sched-tabs").onclick=e=>{const t=e.target.closest(".tab"); if(t){schedTab=t.dataset.t;renderSchedule()}};
 
 function tcard(t){
-  const d=dateRange(t.start,t.end), g=D.games.filter(x=>x.tournament==t.name&&x.res), done=(t.end||t.start)<today();
+  const d=dateRange(t.start,t.end), g=D.games.filter(x=>x.tournament==t.name&&x.res), done=isDone(t);
   return `<div class="tcard"><div class="top"><div class="date"><small>${d.mon}</small><b>${d.days}</b></div><h3>${esc(t.name)}</h3></div>
    <div class="body">${done?`<span><span class="badge done">Completed</span></span>`:`<span><span class="badge">Upcoming</span></span>`}
    <div><span class="pin">${ICON.loc}</span> ${esc([t.venue,t.city].filter(Boolean).join(", ")||"Location TBA")}</div>
-   ${t.sanction?`<div>Sanction: <b>${esc(t.sanction)}</b></div>`:""}
+   ${t.sanction?`<div>Organization: <b>${esc(t.sanction)}</b></div>`:""}
    ${g.length?`<div class="rec">Record: ${recStr(record(g))}</div>`:""}
    ${t.finish?`<div class="rec" style="color:var(--pink)">🏆 ${esc(t.finish)}</div>`:""}
    ${t.link?`<a href="${esc(t.link)}" target="_blank" rel="noopener" style="color:var(--pink);font-weight:600;margin-top:auto">Tournament details ↗</a>`:""}</div></div>`;
 }
 function renderTournaments(){
-  const up=D.tournaments.filter(t=>(t.end||t.start)>=today()), done=D.tournaments.filter(t=>(t.end||t.start)<today()).reverse();
+  const up=D.tournaments.filter(t=>!isDone(t)), done=D.tournaments.filter(isDone).reverse();
   $("#t-upcoming").innerHTML=up.length?up.map(tcard).join(""):`<div class="empty">No upcoming tournaments posted.</div>`;
   $("#t-done").innerHTML=done.length?done.map(tcard).join(""):`<div class="empty">No completed tournaments yet.</div>`;
 }
@@ -3037,15 +3045,17 @@ function renderContact(){
   $("#coaches").innerHTML=D.coaches.map(coachHTML).join("")||`<div class="empty">Coach contacts coming soon.</div>`;
   $("#coaches-about").innerHTML=D.coaches.map(coachHTML).join("");
   const S=D.S;
-  $("#contact-extra").innerHTML=`<div class="box"><h3 class="h">Follow the Team</h3><p>${["facebook","instagram","youtube","gamechanger_team"].filter(k=>S[k]).map(k=>`<a class="btn ghost" style="color:var(--navy);margin:4px 6px 0 0" href="${esc(S[k])}" target="_blank" rel="noopener">${k.replace("_team","").replace(/^./,c=>c.toUpperCase())} ↗</a>`).join("")||`<span style="color:var(--muted)">Social links coming soon.</span>`}</p></div>`;
+  $("#contact-extra").innerHTML=`<div class="box"><h3 class="h">Follow the Team</h3><p>${["facebook","instagram","youtube","gamechanger_team"].filter(k=>S[k]).map(k=>`<a class="btn ghost" style="color:var(--navy);margin:4px 6px 0 0" href="${esc(S[k])}" target="_blank" rel="noopener">${({facebook:"Facebook",instagram:"Instagram",youtube:"YouTube",gamechanger_team:"GameChanger"})[k]} ↗</a>`).join("")||`<span style="color:var(--muted)">Social links coming soon.</span>`}</p></div>`;
 }
 
 function renderRecruiting(){
-  $("#rec-list").innerHTML=D.players.map(p=>`<a class="rec-row" href="#player-${p.id}"><span class="n">${esc(p.number)}</span><div><b>${esc(p.first)} ${esc(p.last)}</b><small>${esc(p.positions)}${p.grad?` · Class of ${esc(p.grad)}`:""}</small></div></a>`).join("");
+  $("#rec-list").innerHTML=D.players.length?"":`<div class="empty" style="grid-column:1/-1">Player profiles are on the way. They'll appear here as each family approves them.</div>`;
+  if(D.players.length) $("#rec-list").innerHTML=D.players.map(p=>`<a class="rec-row" href="#player-${p.id}"><span class="n">${esc(p.number)}</span><div><b>${esc(p.first)} ${esc(p.last)}</b><small>${esc(p.positions)}${p.grad?` · Class of ${esc(p.grad)}`:""}</small></div></a>`).join("");
 }
 
 function renderCard(){
   const S=D.S, base=(CONFIG.SITE_URL||location.href.split("#")[0]);
+  if(!D.players.length){ $("#card-sheet").outerHTML=`<div class="empty" id="card-sheet">The recruiting card fills in once player profiles are approved.</div>`; return; }
   const cells=D.players.slice(0,12).map(p=>`<div class="cs-p">${avatar(p,true)}<div class="info"><div style="display:flex;gap:.6cqw;align-items:flex-start"><span class="num">${esc(p.number)}</span><span class="nm">${esc(p.first)}<br>${esc(p.last)}</span></div><div class="ps">${esc(p.positions)}</div><div class="cl">Class of<b>${esc(p.grad)}</b></div></div><div class="q">${qrSVG(profileURL(p))}<span>SCAN FOR<br>PROFILE</span></div></div>`).join("");
   const coaches=D.coaches.slice(0,3).map(c=>`<div class="c"><b>${esc(c.name)}</b><span>${esc(c.title)}</span><span>${esc(c.phone)}</span><span>${esc(c.email)}</span></div>`).join("");
   const links=[["Team Roster",base+"#roster"],["Tournament Schedule",base+"#schedule"],...(S.highlights_playlist?[["Highlight Videos",S.highlights_playlist]]:[]),...(S.instagram?[["Follow Us",S.instagram]]:[])];

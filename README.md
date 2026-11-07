@@ -3,12 +3,15 @@
 Static site (single `index.html`) for LC Express 14U Fastpitch Softball, Normangee, TX.
 Content is managed from a Google Sheet; the page reads it in the browser on each visit.
 
-## Going live with the Google Sheet
-1. Sheet tabs: `Settings`, `Players`, `Games`, `Tournaments`, `Coaches` (see `LC_Express_Website_Data.xlsx` template).
-2. Format all cells as Plain text. Share → "Anyone with the link" → Viewer.
-3. In `index.html`, set `CONFIG.SHEET_ID` to the ID from the sheet URL and `CONFIG.SITE_URL` to the final domain (used in QR codes).
+## Data
+The site reads **LC Express 14U | Website Feed (Public)** (`CONFIG.SHEET_ID` in `index.html`).
+That feed pulls from the coach's private master sheet (*LC Express 14U | Recruiting Master Database*) with IMPORTRANGE:
 
-Until `SHEET_ID` is set, the site shows built-in sample data.
+- **Players**: only rows marked `Yes` under "Public Approved?", and only public columns (no approval status, no parent contacts).
+- **Games, Tournaments, Settings**: copied as-is.
+
+The feed sheet must be shared as "Anyone with the link: Viewer". The master sheet stays private.
+Headshots: drop `assets/players/<profile-slug>.webp` in the repo; otherwise the Drive photo link is tried, then a silhouette.
 
 ## Pages (hash routes)
 `#home` `#roster` `#player-first-last` `#schedule` `#tournaments` `#about` `#recruiting` `#card` `#contact`
