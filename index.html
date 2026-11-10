@@ -2812,6 +2812,7 @@ const CONFIG = {
   /* Public feed sheet ("LC Express 14U | Website Feed (Live – coach's sheet)"). It pulls from the
      coach's master sheet and carries every player not marked No under "Public Approved?". */
   SHEET_ID: "1hZoH-DWUI5dWB-_I1K4KE2ct9t06uwH430XnO29i0zs",
+  BACKUP_SHEET_ID: "1QiiFVle5WyveFrT1aMVyKIYsSgFhA9BS6qAxY9veZB4",   // used only if the live feed can't be read
   TABS: { settings:"Settings", players:"Players", games:"Games", tournaments:"Tournaments" },
   SITE_URL: ""                  // e.g. "https://www.lcexpress-tx.com/" — used in QR codes. Blank = current address.
 };
@@ -2867,13 +2868,16 @@ function parseCSV(text){
 }
 async function loadSheet(){
   if(!CONFIG.SHEET_ID) return {...FALLBACK, source:"fallback"};
-  const get = async tab=>{
-    const url=`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`;
+  const getFrom = async (id,tab)=>{
+    const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`;
     const r=await fetch(url,{cache:"no-store"}); if(!r.ok) throw new Error(tab);
     const t=await r.text(); if(/^\s*</.test(t)) throw new Error(tab+" not shared"); return parseCSV(t);
   };
   try{
-    const T=CONFIG.TABS; const [settings,players,games,tournaments]=await Promise.all([get(T.settings),get(T.players),get(T.games),get(T.tournaments)]);
+    const T=CONFIG.TABS;
+    const all = id=>Promise.all([getFrom(id,T.settings),getFrom(id,T.players),getFrom(id,T.games),getFrom(id,T.tournaments)]);
+    let r; try{ r=await all(CONFIG.SHEET_ID); }catch(e){ if(!CONFIG.BACKUP_SHEET_ID) throw e; console.warn("Live feed unavailable, using backup",e); r=await all(CONFIG.BACKUP_SHEET_ID); }
+    const [settings,players,games,tournaments]=r;
     return {settings,players,games,tournaments,source:"sheet"};
   }catch(e){ console.warn("Feed sheet unavailable",e); return {...FALLBACK,source:"fallback"}; }
 }
