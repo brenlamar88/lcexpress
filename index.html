@@ -2809,9 +2809,9 @@ table.games td:first-child{white-space:nowrap}
    docs.google.com/spreadsheets/d/<THIS_PART>/edit
    ========================================================= */
 const CONFIG = {
-  /* Public feed sheet ("LC Express 14U | Website Feed (Public)"). It pulls from Bren's private
-     copy of the master sheet and carries every player not marked No under "Public Approved?". */
-  SHEET_ID: "1QiiFVle5WyveFrT1aMVyKIYsSgFhA9BS6qAxY9veZB4",
+  /* Public feed sheet ("LC Express 14U | Website Feed (Live – coach's sheet)"). It pulls from the
+     coach's master sheet and carries every player not marked No under "Public Approved?". */
+  SHEET_ID: "1hZoH-DWUI5dWB-_I1K4KE2ct9t06uwH430XnO29i0zs",
   TABS: { settings:"Settings", players:"Players", games:"Games", tournaments:"Tournaments" },
   SITE_URL: ""                  // e.g. "https://www.lcexpress-tx.com/" — used in QR codes. Blank = current address.
 };
@@ -2836,7 +2836,7 @@ const MEASURABLES = [
   ["pitching_avg_max","Pitching Velo","mph"],["hitting_avg_max","Exit Velo","mph"],
   ["throwing_avg_max","Throwing Velo","mph"],["home_to_first_sec","Home to 1B","sec"]
 ];
-const POS = {pitcher:"P",catcher:"C","first base":"1B","second base":"2B","third base":"3B",shortstop:"SS",outfield:"OF",outfielder:"OF",utility:"UTIL",util:"UTIL","middle infielder":"MI",mi:"MI",infield:"IF"};
+const POS = {pitcher:"P",catcher:"C","first base":"1B","second base":"2B","third base":"3B",shortstop:"SS",outfield:"OF",outfielder:"OF",utility:"UTIL",util:"UTIL","middle infielder":"MI","middle infield":"MI",mi:"MI",infield:"IF"};
 const POS_LONG = {P:"Pitcher",C:"Catcher","1B":"First Base","2B":"Second Base","3B":"Third Base",SS:"Shortstop",OF:"Outfield",UTIL:"Utility",MI:"Middle Infield",IF:"Infield",LF:"Left Field",CF:"Center Field",RF:"Right Field"};
 
 /* ---------- Helpers ---------- */
@@ -2896,6 +2896,7 @@ function normalize(raw){
   const S={...DEFAULTS};
   (raw.settings||[]).forEach(r=>{ const k=keyOf(r.setting||r.key); const v=String(r.value??"").trim(); if(k && v) S[k]=v; });
   const loc=S.location.split(",").map(x=>x.trim()); S.city=loc[0]||""; S.state=(loc[1]||"").replace(/^TX$/i,"Texas");
+  if(S.team_bio) S.about=S.team_bio;
   S.age_group=S.level||"14U";
   S.sanction=S.governing_body||"";
   S.facebook=S.facebook_url||""; S.instagram=S.instagram_url||""; S.youtube=S.youtube_url||"";
@@ -2914,7 +2915,7 @@ function normalize(raw){
       height:String(p.height||"").replace(/[’′]/g,"'").replace(/[”″]/g,'"'), gpa:p.gpa||"",
       photoDrive:driveId(p.photo_link), gamechanger:isURL(p.gamechanger_profile)?p.gamechanger_profile:"",
       highlights:isURL(p.highlight_video)?p.highlight_video:"", social:String(p.social_recruiting_link||"").trim(),
-      bio:p.player_bio||"", slug:p.profile_slug||"",
+      bio:(()=>{ const b=String(p.player_bio||"").trim(); const m=b.match(/^([A-Z][a-z]+)\s/); return (m && sp[0] && m[1]!==sp[0] && !/^(she|her|a|an|the|this|as|with)$/i.test(m[1])) ? "" : b; })(), slug:p.profile_slug||"",
       meas:Object.fromEntries(MEASURABLES.map(([k])=>[k,p[k]]))
     };
   }).filter(p=>p.name);

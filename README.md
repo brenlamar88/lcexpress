@@ -5,7 +5,7 @@ Content is managed from a Google Sheet; the page reads it in the browser on each
 
 ## Data
 The site reads **LC Express 14U | Website Feed (Public)** (`CONFIG.SHEET_ID` in `index.html`).
-That feed pulls from Bren's private copy of the master sheet (*Copy of LC Express 14U | Recruiting Master Database (Nov 7)*) with IMPORTRANGE:
+That feed pulls from the coach's master sheet (*LC Express 14U | Recruiting Master Database*) with IMPORTRANGE:
 
 - **Players**: every row not marked `No` under "Public Approved?" (parents signed off for all 12, Nov 7), and only public columns (no approval status, no parent contacts).
 - **Games, Tournaments, Settings**: copied as-is.
