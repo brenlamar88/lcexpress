@@ -2589,6 +2589,50 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
 footer .script{color:var(--pink);font-size:28px}
 .datanote{font-size:12px;opacity:.6}
 
+
+/* ---------- Mobile pass ---------- */
+.sched-layout>*{min-width:0}
+table.games td:first-child{white-space:nowrap}
+.tablewrap{-webkit-overflow-scrolling:touch}
+.chip{min-height:44px;padding:8px 18px}
+.crumb a{display:inline-block;padding:12px 0}
+.pnav a{display:inline-block;padding:12px 0}
+.tcard .body a{display:inline-block;padding:10px 0}
+.card-mobile-note{display:none}
+@media(max-width:760px){
+  .hero-sub{gap:10px}.hero-sub i{width:28px}
+  .hero-sub span{letter-spacing:.14em;font-size:17px;white-space:nowrap}
+  .hero-loc{font-size:14px}
+  .hero .tagline{font-size:18px}
+  .stat{padding:18px 8px}.stat b{font-size:34px}.stat span{font-size:14px}
+  .section{padding:40px 0}
+  .player{display:flex;flex-direction:column}
+  .player>div:first-child{display:contents}
+  .player-photo{order:1;max-width:none;width:100%}
+  .player-main{order:2;padding:22px}
+  .qrbox{order:3;margin-top:0}
+  .player-main h1{font-size:40px}
+  .psub{font-size:16px}
+  .facts{grid-template-columns:1fr 1fr}
+  .pactions .btn{width:100%;justify-content:center;font-size:16px;white-space:nowrap;padding:12px 16px}
+  table.games.with-t th:nth-child(2),table.games.with-t td:nth-child(2){display:none}
+  table.games td:first-child{white-space:nowrap}
+  .pnav{gap:12px;font-size:14px}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr)}
+  .tab{padding:10px 6px;font-size:15px;text-align:center}
+  table.games{min-width:0}
+  table.games th,table.games td{padding:10px 8px;font-size:14px}
+  .res{font-size:15px}
+  .card-mobile-note{display:block;margin:-6px 0 14px}
+  .card-tools .btn{width:100%;justify-content:center}
+  .up{min-width:0;flex-basis:100%}
+  .coach b{font-size:22px}
+}
+@media(max-width:420px){
+  .glance h3{font-size:22px}
+  table.games td:nth-child(2):not([colspan]){max-width:120px}
+}
+
 @media print{
   .nav,footer,.card-tools,.page-head{display:none!important}
   body{background:#fff}
@@ -2734,6 +2778,7 @@ footer .script{color:var(--pink);font-size:28px}
       <div class="card-tools">
         <button class="btn" id="print-btn">Print / Save PDF</button>
         <span class="note">Generated live from the roster sheet. Each QR code opens that player's profile page.</span>
+        <span class="note card-mobile-note">On a phone the card is shown small. Pinch to zoom, or tap Print to save a full-size PDF.</span>
       </div>
       <div class="card-sheet" id="card-sheet"></div>
     </div></div>
@@ -3006,7 +3051,7 @@ function renderSchedule(){
   let html="";
   if(schedTab=="results"){
     const g=D.games.filter(x=>x.res).slice().reverse();
-    html = g.length?`<table class="games"><tr><th>Date</th><th>Tournament</th><th>Opponent</th><th>Result</th></tr>${g.map(x=>gameRow(x)).join("")}</table>`:`<div class="empty">No results yet.</div>`;
+    html = g.length?`<table class="games with-t"><tr><th>Date</th><th>Tournament</th><th>Opponent</th><th>Result</th></tr>${g.map(x=>gameRow(x)).join("")}</table>`:`<div class="empty">No results yet.</div>`;
   } else if(schedTab=="schedule"){
     const up=D.tournaments.filter(t=>!isDone(t));
     const ug=D.games.filter(x=>!x.res && x.date>=today());
