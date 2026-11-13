@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LC Express 14U Fastpitch Softball</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,700;1,800;1,900&family=Barlow:wght@400;500;600&family=Kaushan+Script&display=swap" rel="stylesheet">
@@ -2647,7 +2648,7 @@ table.games td:first-child{white-space:nowrap}
 
 <nav class="nav">
   <div class="wrap">
-    <a class="brand" href="#home" aria-label="LC Express 14U home"><img class="brand-logo" src="lc-express-14u-logo.svg" alt="LC Express 14U logo"></a>
+    <a class="brand" href="#home" aria-label="LC Express 14U home"><img class="brand-logo" src="assets/logo.webp" alt="LC Express 14U logo" width="640" height="669"></a>
     <div class="links" id="links">
       <a href="#home" data-r="home">Home</a>
       <a href="#roster" data-r="roster">Roster</a>
@@ -3110,7 +3111,7 @@ function renderCard(){
   const coaches=D.coaches.slice(0,3).map(c=>`<div class="c"><b>${esc(c.name)}</b><span>${esc(c.title)}</span><span>${esc(c.phone)}</span><span>${esc(c.email)}</span></div>`).join("");
   const links=[["Team Roster",base+"#roster"],["Tournament Schedule",base+"#schedule"],...(S.highlights_playlist?[["Highlight Videos",S.highlights_playlist]]:[]),...(S.instagram?[["Follow Us",S.instagram]]:[])];
   $("#card-sheet").innerHTML=`
-   <div class="cs-head"><img class="cs-logo" src="lc-express-14u-logo.svg" alt=""><div class="t"><span class="script">${esc(S.short_name||"LC Express")}</span><span class="h">${esc(S.age_group||"14U")}</span></div>
+   <div class="cs-head"><img class="cs-logo" src="assets/logo.webp" alt=""><div class="t"><span class="script">${esc(S.short_name||"LC Express")}</span><span class="h">${esc(S.age_group||"14U")}</span></div>
      <div class="meta"><b>${esc(S.tagline||"")}</b>${esc([S.city&&S.state?`${S.city}, ${S.state}`:"",S.season,S.sanction].filter(Boolean).join("  |  ").toUpperCase())}</div></div>
    <div class="cs-grid">${cells}</div>
    <div class="cs-foot"><div class="script">Coaching<br>Staff</div>${coaches}<div class="qrs">${links.map(([l,u])=>`<div>${qrSVG(u)}${l}</div>`).join("")}</div></div>`;
